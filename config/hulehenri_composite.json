@@ -1,0 +1,18 @@
+{
+    "input": {
+	"dir": "/tutka/data/dev/cache/radar/fmippn/hulehenri/accrate_composites",
+	"filename": "{timestamp}_radar.rack.comp.accrate.{timeres}min_CONF=HULEHENRI.h5",
+	"timeres": 5
+    },
+    "output": {
+	"dir": "/tutka/data/dev/cache/radar/fmippn/hulehenri/accrate_composites",
+	"filename": "{timestamp}_radar.rack.comp.accrate.{timeres}min_CONF=HULEHENRI.h5",
+	"timeres": 60,
+	"dtype": "uint16",
+	"gain": 0.001,
+	"offset": 0,
+	"nodata": 65535,
+	"undetect": 0
+
+    }
+}
