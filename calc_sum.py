@@ -7,6 +7,7 @@ import math
 import json
 import matplotlib.pyplot as plt
 import os
+import sys
 
 import utils
 
@@ -74,25 +75,26 @@ def main():
         # files cannot be read also then exit.        
         filename = f"{input_conf['dir'].format(year=timestamp[0:4], month=timestamp[4:6], day=timestamp[6:8])}" + "/" + input_conf['filename'].format(timestamp=timestamp, timeres = f'{input_conf["timeres"]:03}', config=options.config)
 
-        try:
+        if os.path.isfile(filename):
             image_array, quantity, infile_timestamp, gain, offset, nodata, undetect = utils.read_hdf5(filename)
-        except:
-            print(f"Did not manage to read file {filename}. Trying to read earlier timestamp instead.")
-            timestamp = timestamp - (datetime.timedelta(minutes = mins_between))
+
+        else:
+            print(f"File {filename} does not exist. Trying to read earlier timestamp instead.")
+            timestamp = (datetime.datetime.strptime(timestamp, '%Y%m%d%H%M') - (datetime.timedelta(minutes = mins_between))).strftime('%Y%m%d%H%M')
             filename = f"{input_conf['dir'].format(year=timestamp[0:4], month=timestamp[4:6], day=timestamp[6:8])}" + "/" + input_conf['filename'].format(timestamp=timestamp, timeres = f'{input_conf["timeres"]:03}', config=options.config)
 
-            try:
+            if os.path.isfile(filename):
                 image_array, quantity, infile_timestamp, gain, offset, nodata, undetect = utils.read_hdf5(filename)
-            except:
-                print(f"Did not manage to read file {filename}. Trying to read earlier timestamp instead.")
-                timestamp = timestamp - (datetime.timedelta(minutes = mins_between))
+            else:
+                print(f"File {filename} does not exist. Trying to read earlier timestamp instead.")
+                timestamp = (datetime.datetime.strptime(timestamp, '%Y%m%d%H%M') - (datetime.timedelta(minutes = mins_between))).strftime('%Y%m%d%H%M')
                 filename = f"{input_conf['dir'].format(year=timestamp[0:4], month=timestamp[4:6], day=timestamp[6:8])}" + "/" + input_conf['filename'].format(timestamp=timestamp, timeres = f'{input_conf["timeres"]:03}', config=options.config)
 
-                try:
+                if os.path.isfile(filename):
                     image_array, quantity, infile_timestamp, gain, offset, nodata, undetect = utils.read_hdf5(filename)
-                except Exception:
-                    print(f"Did not manage to read file {filename} and also earlier tries failed. Exiting.")
-                    raise
+                else:
+                    print(f"File {filename} does not exist and also earlier tries failed. Exiting.")
+                    sys.exit(1)
                     
         nodata_mask = (image_array == nodata)
         undetect_mask = (image_array == undetect)
