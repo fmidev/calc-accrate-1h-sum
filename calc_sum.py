@@ -6,6 +6,7 @@ import numpy as np
 import math
 import json
 import matplotlib.pyplot as plt
+import os
 
 import utils
 
@@ -13,12 +14,12 @@ def read_config(config_file):
     """ Read parameters from config file.                                                          
                                                                                                    
     Keyword arguments:                                                                             
-    config_file -- json file containing input parameters                                           
+    config_file -- json file containing input parameters
                                                                                                    
     Return:                                                                                        
     coef -- dictionary containing coefficients                                                     
-    input_conf -- dictionary containing input parameters                                           
-    output_conf -- dictionary containing output parameters                                         
+    input_conf -- dictionary containing input parameters
+    output_conf -- dictionary containing output parameters
                                                                                                    
     """
 
@@ -66,12 +67,33 @@ def main():
     
     print("first_timestamp= ", first_timestamp)
     print("last_timestamp= ", last_timestamp)
-
+    
     for timestamp in timerange(formatted_first_timestamp, formatted_last_timestamp, input_conf['timeres'], reverse = False):
-        
-        # Read file
+    
         filename = f"{input_conf['dir'].format(year=timestamp[0:4], month=timestamp[4:6], day=timestamp[6:8])}" + "/" + input_conf['filename'].format(timestamp=timestamp, timeres = f'{input_conf["timeres"]:03}', config=options.config)
-        image_array, quantity, infile_timestamp, gain, offset, nodata, undetect = utils.read_hdf5(filename)
+
+        try:
+            image_array, quantity, infile_timestamp, gain, offset, nodata, undetect = utils.read_hdf5(filename)
+        except:
+            print(f"Did not manage to read file {filename}. Trying to read earlier timestamp instead.")
+        else:
+            timestamp = timestamp - (datetime.timedelta(minutes = mins_between))
+            filename = f"{input_conf['dir'].format(year=timestamp[0:4], month=timestamp[4:6], day=timestamp[6:8])}" + "/" + input_conf['filename'].format(timestamp=timestamp, timeres = f'{input_conf["timeres"]:03}', config=options.config)
+
+            try:
+                image_array, quantity, infile_timestamp, gain, offset, nodata, undetect = utils.read_hdf5(filename)
+            except:
+                print(f"Did not manage to read file {filename}. Trying to read earlier timestamp instead.")
+            else:
+                timestamp = timestamp - (datetime.timedelta(minutes = mins_between))
+                filename = f"{input_conf['dir'].format(year=timestamp[0:4], month=timestamp[4:6], day=timestamp[6:8])}" + "/" + input_conf['filename'].format(timestamp=timestamp, timeres = f'{input_conf["timeres"]:03}', config=options.config)
+
+                try:
+                    image_array, quantity, infile_timestamp, gain, offset, nodata, undetect = utils.read_hdf5(filename)
+                except Exception:
+                    print(f"Did not manage to read file {filename}. Exiting.")
+                    raise
+                    
         nodata_mask = (image_array == nodata)
         undetect_mask = (image_array == undetect)
 
@@ -89,8 +111,9 @@ def main():
             
         else:
             # Calculate sum
-            acc_rate = np.where(np.isnan(acc_rate), image_array, acc_rate + np.nan_to_num(image_array))            
+            acc_rate = np.where(np.isnan(acc_rate), image_array, acc_rate + np.nan_to_num(image_array))
 
+                
     # Write to file
     nodata_mask = ~np.isfinite(acc_rate)
     undetect_mask = (acc_rate == 0)
