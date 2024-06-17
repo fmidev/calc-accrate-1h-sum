@@ -76,7 +76,6 @@ def main():
             image_array, quantity, infile_timestamp, gain, offset, nodata, undetect = utils.read_hdf5(filename)
         except:
             print(f"Did not manage to read file {filename}. Trying to read earlier timestamp instead.")
-        else:
             timestamp = timestamp - (datetime.timedelta(minutes = mins_between))
             filename = f"{input_conf['dir'].format(year=timestamp[0:4], month=timestamp[4:6], day=timestamp[6:8])}" + "/" + input_conf['filename'].format(timestamp=timestamp, timeres = f'{input_conf["timeres"]:03}', config=options.config)
 
@@ -84,14 +83,13 @@ def main():
                 image_array, quantity, infile_timestamp, gain, offset, nodata, undetect = utils.read_hdf5(filename)
             except:
                 print(f"Did not manage to read file {filename}. Trying to read earlier timestamp instead.")
-            else:
                 timestamp = timestamp - (datetime.timedelta(minutes = mins_between))
                 filename = f"{input_conf['dir'].format(year=timestamp[0:4], month=timestamp[4:6], day=timestamp[6:8])}" + "/" + input_conf['filename'].format(timestamp=timestamp, timeres = f'{input_conf["timeres"]:03}', config=options.config)
 
                 try:
                     image_array, quantity, infile_timestamp, gain, offset, nodata, undetect = utils.read_hdf5(filename)
                 except Exception:
-                    print(f"Did not manage to read file {filename}. Exiting.")
+                    print(f"Did not manage to read file {filename} and also earlier tries failed. Exiting.")
                     raise
                     
         nodata_mask = (image_array == nodata)
