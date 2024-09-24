@@ -8,6 +8,7 @@ import json
 import matplotlib.pyplot as plt
 import os
 import sys
+from pathlib import Path
 
 import utils
 
@@ -68,27 +69,49 @@ def main():
     
     print("first_timestamp= ", first_timestamp)
     print("last_timestamp= ", last_timestamp)
-    
-    for timestamp in timerange(formatted_first_timestamp, formatted_last_timestamp, input_conf['timeres'], reverse = False):
-        
-        # If file cannot be read, try to read files with earlier timestamps. If two earlier
-        # files cannot be read also then exit.        
-        filename = f"{input_conf['dir'].format(year=timestamp[0:4], month=timestamp[4:6], day=timestamp[6:8])}" + "/" + input_conf['filename'].format(timestamp=timestamp, timeres = f'{input_conf["timeres"]:03}', config=options.config)
+
+    for timestamp in timerange(
+        formatted_first_timestamp, formatted_last_timestamp, input_conf["timeres"], reverse=False
+    ):
+
+        # If file is not found, try to read files with earlier timestamps. If two earlier
+        # files cannot also be read then exit.
+        filename = Path(input_conf["dir"].format(year=timestamp[0:4], month=timestamp[4:6], day=timestamp[6:8])) / Path(
+            input_conf["filename"].format(
+                timestamp=timestamp, timeres=f'{input_conf["timeres"]:03}', config=options.config
+            )
+        )
 
         if os.path.isfile(filename):
             image_array, quantity, infile_timestamp, gain, offset, nodata, undetect = utils.read_hdf5(filename)
 
         else:
             print(f"File {filename} does not exist. Trying to read earlier timestamp instead.")
-            timestamp = (datetime.datetime.strptime(timestamp, '%Y%m%d%H%M') - (datetime.timedelta(minutes = mins_between))).strftime('%Y%m%d%H%M')
-            filename = f"{input_conf['dir'].format(year=timestamp[0:4], month=timestamp[4:6], day=timestamp[6:8])}" + "/" + input_conf['filename'].format(timestamp=timestamp, timeres = f'{input_conf["timeres"]:03}', config=options.config)
+            timestamp = (
+                datetime.datetime.strptime(timestamp, "%Y%m%d%H%M") - (datetime.timedelta(minutes=mins_between))
+            ).strftime("%Y%m%d%H%M")
+            filename = Path(
+                input_conf["dir"].format(year=timestamp[0:4], month=timestamp[4:6], day=timestamp[6:8])
+            ) / Path(
+                input_conf["filename"].format(
+                    timestamp=timestamp, timeres=f'{input_conf["timeres"]:03}', config=options.config
+                )
+            )
 
             if os.path.isfile(filename):
                 image_array, quantity, infile_timestamp, gain, offset, nodata, undetect = utils.read_hdf5(filename)
             else:
                 print(f"File {filename} does not exist. Trying to read earlier timestamp instead.")
-                timestamp = (datetime.datetime.strptime(timestamp, '%Y%m%d%H%M') - (datetime.timedelta(minutes = mins_between))).strftime('%Y%m%d%H%M')
-                filename = f"{input_conf['dir'].format(year=timestamp[0:4], month=timestamp[4:6], day=timestamp[6:8])}" + "/" + input_conf['filename'].format(timestamp=timestamp, timeres = f'{input_conf["timeres"]:03}', config=options.config)
+                timestamp = (
+                    datetime.datetime.strptime(timestamp, "%Y%m%d%H%M") - (datetime.timedelta(minutes=mins_between))
+                ).strftime("%Y%m%d%H%M")
+                filename = (
+                    f"{input_conf['dir'].format(year=timestamp[0:4], month=timestamp[4:6], day=timestamp[6:8])}"
+                    + "/"
+                    + input_conf["filename"].format(
+                        timestamp=timestamp, timeres=f'{input_conf["timeres"]:03}', config=options.config
+                    )
+                )
 
                 if os.path.isfile(filename):
                     image_array, quantity, infile_timestamp, gain, offset, nodata, undetect = utils.read_hdf5(filename)
@@ -121,9 +144,15 @@ def main():
     undetect_mask = (acc_rate == 0)
     acc_rate = utils.convert_dtype(acc_rate, output_conf, nodata_mask, undetect_mask)
 
-    #Write to file                                                                                                                          
-    outfile = output_conf['dir'] + '/' + output_conf['filename'].format(timestamp = last_timestamp, timeres = f'{output_conf["timeres"]:03}') 
-    data_first_timestamp = (formatted_first_timestamp - (datetime.timedelta(minutes = input_conf['timeres']))).strftime('%Y%m%d%H%M')
+    # Write to file
+    outfile = Path(
+        output_conf["dir"].format(
+            year=last_timestamp[0:4], month=last_timestamp[4:6], day=last_timestamp[6:8], config=options.config
+        )
+    ) / Path(output_conf["filename"].format(timestamp=last_timestamp, timeres=f'{output_conf["timeres"]:03}'))
+    data_first_timestamp = (formatted_first_timestamp - (datetime.timedelta(minutes=input_conf["timeres"]))).strftime(
+        "%Y%m%d%H%M"
+    )
     startdate = data_first_timestamp[0:8]
     starttime = data_first_timestamp[8:14]
     enddate = last_timestamp[0:8]
