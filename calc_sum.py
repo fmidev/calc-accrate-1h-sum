@@ -184,12 +184,14 @@ def main():
         )
     ) / Path(output_conf["filename"].format(timestamp=last_timestamp, timeres=f'{output_conf["timeres"]:03}'))
     data_first_timestamp = (formatted_first_timestamp - (datetime.timedelta(minutes=input_conf["timeres"]))).strftime(
-        "%Y%m%d%H%M"
+        "%Y%m%d%H%M%S"
     )
     startdate = data_first_timestamp[0:8]
     starttime = data_first_timestamp[8:14]
-    enddate = last_timestamp[0:8]
-    endtime = last_timestamp[8:14]
+    # enddate = last_timestamp[0:8]
+    # endtime = last_timestamp[8:14]
+    enddate = formatted_last_timestamp.strftime("%Y%m%d")
+    endtime = formatted_last_timestamp.strftime("%H%M%S")
     date = enddate
     time = endtime
 
