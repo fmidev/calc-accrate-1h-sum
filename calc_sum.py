@@ -67,8 +67,14 @@ def main():
     # Calculate first timestamp
     last_timestamp = options.timestamp
     formatted_last_timestamp = datetime.datetime.strptime(last_timestamp, "%Y%m%d%H%M")
-    mins_between = output_conf["timeres"] - input_conf["timeres"]
-    formatted_first_timestamp = formatted_last_timestamp - (datetime.timedelta(minutes=mins_between))
+    timeres = output_conf["timeres"]
+    if timeres == "cumulative-from-midnight":
+        formatted_first_timestamp = formatted_last_timestamp.replace(hour=0, minute=0, second=0, microsecond=0)
+    elif timeres == "cumulative-from-hour-start":
+        formatted_first_timestamp = formatted_last_timestamp.replace(minute=0, second=0, microsecond=0)
+    else:
+        mins_between = timeres - input_conf["timeres"]
+        formatted_first_timestamp = formatted_last_timestamp - datetime.timedelta(minutes=mins_between)
     first_timestamp = formatted_first_timestamp.strftime("%Y%m%d%H%M")
 
     print(f"first_timestamp={first_timestamp}, last_timestamp={last_timestamp}")
@@ -182,7 +188,16 @@ def main():
         output_conf["dir"].format(
             year=last_timestamp[0:4], month=last_timestamp[4:6], day=last_timestamp[6:8], config=options.config, FMI_RUN_ENV=os.getenv("FMI_RUN_ENV", "unset")
         )
-    ) / Path(output_conf["filename"].format(timestamp=last_timestamp, timeres=f'{output_conf["timeres"]:03}'))
+    ) / Path(output_conf["filename"].format(
+        timestamp=last_timestamp,
+        timeres=(
+            f'{int((formatted_last_timestamp - formatted_first_timestamp).total_seconds() / 60):04}'
+            if timeres == "cumulative-from-midnight"
+            else f'{int((formatted_last_timestamp - formatted_first_timestamp).total_seconds() / 60):03}'
+            if timeres == "cumulative-from-hour-start"
+            else f'{timeres:03}'
+        )
+    ))
     data_first_timestamp = (formatted_first_timestamp - (datetime.timedelta(minutes=input_conf["timeres"]))).strftime(
         "%Y%m%d%H%M%S"
     )

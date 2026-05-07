@@ -1,0 +1,19 @@
+{
+  "input": {
+    "dir": "/input",
+    "filename": "{timestamp}_composite_cappi_600_acrr5min_finradfast_filtered.{timeres}min.h5",
+    "timeres": 5,
+    "allow_n_missing_timesteps": 3,
+    "allow_n_missing_timesteps_consecutive": 2
+  },
+  "output": {
+    "dir": "/output",
+    "filename": "{timestamp}_composite_cappi_600_acrr1h_finradfast_filtered.h5",
+    "timeres": "cumulative-from-hour-start",
+    "dtype": "int32",
+    "gain": 0.001,
+    "offset": 0,
+    "nodata": -1,
+    "undetect": 0
+  }
+}
