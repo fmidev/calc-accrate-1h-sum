@@ -81,7 +81,7 @@ def main():
     file_df["timestep"] = read_timesteps.values
     file_df["filename"] = file_df["timestep"].map(
         lambda ts: Path(
-            input_conf["dir"].format(year=ts.strftime("%Y"), month=ts.strftime("%m"), day=ts.strftime("%d"))
+            input_conf["dir"].format(year=ts.strftime("%Y"), month=ts.strftime("%m"), day=ts.strftime("%d"), FMI_RUN_ENV=os.getenv("FMI_RUN_ENV", "unset"))
         )
         / input_conf["filename"].format(
             timestamp=ts.strftime("%Y%m%d%H%M"), timeres=f'{input_conf["timeres"]:03}', config=options.config
@@ -180,7 +180,7 @@ def main():
     # Write to file
     outfile = Path(
         output_conf["dir"].format(
-            year=last_timestamp[0:4], month=last_timestamp[4:6], day=last_timestamp[6:8], config=options.config
+            year=last_timestamp[0:4], month=last_timestamp[4:6], day=last_timestamp[6:8], config=options.config, FMI_RUN_ENV=os.getenv("FMI_RUN_ENV", "unset")
         )
     ) / Path(output_conf["filename"].format(timestamp=last_timestamp, timeres=f'{output_conf["timeres"]:03}'))
     data_first_timestamp = (formatted_first_timestamp - (datetime.timedelta(minutes=input_conf["timeres"]))).strftime(
