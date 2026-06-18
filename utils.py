@@ -175,13 +175,22 @@ def write_accumulated_h5(output_h5, accumulated_image, file_dict_accum, date, ti
         'gain':output_conf['gain'],
         'nodata':output_conf['nodata'],
         'offset':output_conf['offset'],
-        'product':np.string_("COMP"),
+        'product':np.string_("RR"),
         'quantity':np.string_("ACRR"),
         'undetect':output_conf['undetect'],
         'startdate':startdate,
         'starttime':starttime,
         'enddate':enddate,
         'endtime':endtime}
+    file_dict_accum['/dataset1/what'] = {
+        'startdate':startdate,
+        'starttime':starttime,
+        'enddate':enddate,
+        'endtime':endtime,
+        "product": np.string_("RR"),
+        "prodname": np.string_("ACRR"),
+        "prodpar": None,
+    }
     #Insert accumulated dataset into file_dict
     file_dict_accum['/dataset1/data1/data'] = {
         'DATASET':accumulated_image,
