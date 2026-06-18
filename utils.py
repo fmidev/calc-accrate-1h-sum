@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 def read_config(config_file):
     """ Read parameters from config file.
-    
+
     Keyword arguments:
     config_file -- json file containing input parameters
 
@@ -20,15 +20,15 @@ def read_config(config_file):
     output_conf -- dictionary containing output parameters
 
     """
-    
+
     with open(config_file, "r") as jsonfile:
         data = json.load(jsonfile)
- 
+
     coef = data['coef']
     interp_conf = data['interp']
     input_conf = data['input']
     output_conf = data['output']
-    
+
     return coef, interp_conf, input_conf, output_conf
 
 
@@ -37,7 +37,7 @@ def read_hdf5(image_h5_file):
 
     Keyword arguments:
     image_h5_file -- ODIM hdf5 file containing DBZH or RATE array
-    
+
     Return:
     image_array -- numpy array containing DBZH or RATE array
     quantity -- array quantity, either 'DBZH' or 'RATE'
@@ -47,11 +47,11 @@ def read_hdf5(image_h5_file):
     offset -- offset of image_array
 
     """
-    
+
     #Read RATE or DBZH from hdf5 file
     print('Extracting data from image h5 file')
     comp = hiisi.OdimCOMP(image_h5_file, 'r')
-    #Read RATE array if found in dataset      
+    #Read RATE array if found in dataset
     test=comp.select_dataset('DBZH')
     if test != None:
         image_array=comp.dataset
@@ -63,7 +63,7 @@ def read_hdf5(image_h5_file):
             image_array=comp.dataset
             quantity='RATE'
         else:
-            #Look for ACRR array 
+            #Look for ACRR array
             test=comp.select_dataset('ACRR')
             if test != None:
                 image_array=comp.dataset
@@ -79,7 +79,7 @@ def read_hdf5(image_h5_file):
     gen = comp.attr_gen('undetect')
     pair = gen.__next__()
     undetect = pair.value
-    
+
     #Read gain and offset values from metadata
     gen = comp.attr_gen('gain')
     pair = gen.__next__()
@@ -103,9 +103,9 @@ def read_hdf5(image_h5_file):
 
 def convert_dtype(accumulated_image, output_conf, nodata_mask, undetect_mask):
     """ Change output data dtype (e.g. to 16 bit unsigned integer) and rescale data if needed
-    
+
     Keyword arguments:
-    accumulated_image -- 
+    accumulated_image --
     output_conf --
     nodata_mask --
     undetect_mask --
@@ -113,7 +113,7 @@ def convert_dtype(accumulated_image, output_conf, nodata_mask, undetect_mask):
     Return:
     scaled_image_new_dtype --
 
-    """    
+    """
     scaled_image = (accumulated_image - output_conf['offset']) / output_conf['gain']
     scaled_image[nodata_mask] = output_conf['nodata']
     scaled_image[undetect_mask] = output_conf['undetect']
@@ -133,10 +133,10 @@ def init_filedict_accumulation(image_h5_file):
     file_dict_accum -- dictionary containing ODIM metadata
 
     """
-    
+
     #Read metadata from image h5 file
     comp = hiisi.OdimCOMP(image_h5_file, 'r')
-    
+
     #Write metadata to file_dict
     file_dict_accum = {
         '/':dict(comp['/'].attrs.items()),
@@ -148,7 +148,7 @@ def init_filedict_accumulation(image_h5_file):
 
 def write_accumulated_h5(output_h5, accumulated_image, file_dict_accum, date, time, startdate, starttime, enddate, endtime, output_conf):
     """ Write accumulated precipitation rate to ODIM hdf5 file.
-    
+
     Keyword arguments:
     output_h5 --
     accumulated_image --
@@ -162,7 +162,7 @@ def write_accumulated_h5(output_h5, accumulated_image, file_dict_accum, date, ti
     output_conf
 
     """
-    
+
     #Insert date and time to file_dict
     file_dict_accum['/what'] = {
         'date':date,
@@ -189,7 +189,7 @@ def write_accumulated_h5(output_h5, accumulated_image, file_dict_accum, date, ti
         'endtime':endtime,
         "product": np.string_("RR"),
         "prodname": np.string_("ACRR"),
-        "prodpar": None,
+        "prodpar": np.string_(""),
     }
     #Insert accumulated dataset into file_dict
     file_dict_accum['/dataset1/data1/data'] = {
@@ -198,7 +198,7 @@ def write_accumulated_h5(output_h5, accumulated_image, file_dict_accum, date, ti
         'COMPRESSION_OPTS':6,
         'CLASS':np.string_("IMAGE"),
         'IMAGE_VERSION':np.string_("1.2")}
-    #Write hdf5 file from file_dict 
+    #Write hdf5 file from file_dict
     with hiisi.HiisiHDF(output_h5, 'w') as h:
         h.create_from_filedict(file_dict_accum)
 
